@@ -14,19 +14,21 @@ async function getApi(category) {
 
     return itemsInCategory.map(item => {
         let itemManufacturer = itemsByManufacturers[item.manufacturer];
+        
+        let datapayload = itemManufacturer.find(
+            val => val.id === item.id.toUpperCase()
+        )["DATAPAYLOAD"];
+        datapayload = datapayload.replace(/\n/g,'').replace(/\s+/g, '');
+
         return {
             id: item.id,
             name: item.name,
             color: item.color,
             manufacturer: item.manufacturer,
             price: item.price,
-            availability: itemManufacturer[
-                itemManufacturer.find(
-                    val => val.id === item.id.toUpperCase()
-                )
-            ]
+            availability: datapayload
         }
-    })
+    }) 
 }
 
 module.exports = { getApi };
