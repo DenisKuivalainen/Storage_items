@@ -1,10 +1,11 @@
 const { getCategoryFromShop } = require('./BadApi');
 const { getAllItemsFromManufacturers } = require('./CategoryItemsManufacturers');
 
-async function getApi(category) {
-    var itemsInCategory = await getCategoryFromShop(category);
+async function getApi(req, res) {
+    var itemsInCategory = await getCategoryFromShop(req.query.category);
     if(itemsInCategory.length === 0) { // Check if request correct and return any items
-        return [];
+        res.status(400).send('Something is broken!');
+        return;
     }
 
     // Get unique manufacturers for further check of availability
@@ -12,7 +13,8 @@ async function getApi(category) {
 
     var itemsByManufacturers = await getAllItemsFromManufacturers(manufacturers);
 
-    return itemsInCategory.map(item => {
+    // Map each item in category with it availability status
+    var responce = itemsInCategory.map(item => {
         let itemManufacturer = itemsByManufacturers[item.manufacturer];
         
         let datapayload = itemManufacturer.find(
@@ -28,7 +30,9 @@ async function getApi(category) {
             price: item.price,
             availability: datapayload
         }
-    }) 
+    });
+
+    res.send(JSON.stringify(responce));
 }
 
 module.exports = { getApi };
