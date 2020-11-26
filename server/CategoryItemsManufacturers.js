@@ -5,7 +5,6 @@ async function getAllItemsFromManufacturers(manufacturers) {
 
     for(var manufacturer of manufacturers) { // Creates object with manufacturers' items
         let manufacturerItems = await getAvailabilityFromShop(manufacturer);
-        console.log(manufacturer)
         manufacturersAndItems = Object.assign(manufacturersAndItems, {
             [manufacturer]: manufacturerItems
         })

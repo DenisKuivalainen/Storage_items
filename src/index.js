@@ -1,11 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+import './css/index.css';
 import Main from './js/Main';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Main />
+    <div className="index">
+      <Main />
+    </div>
   </React.StrictMode>,
   document.getElementById('root')
 );

@@ -21,6 +21,7 @@ async function getApi(req, res) {
             val => val.id === item.id.toUpperCase()
         )["DATAPAYLOAD"];
         datapayload = datapayload.replace(/\n/g,'').replace(/\s+/g, '');
+        datapayload = datapayload.replace('<AVAILABILITY><INSTOCKVALUE>', '').replace('</INSTOCKVALUE></AVAILABILITY>', '');
 
         return {
             id: item.id,
