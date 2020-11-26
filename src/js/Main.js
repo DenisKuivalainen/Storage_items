@@ -42,7 +42,8 @@ export default class Main extends React.Component {
             accessories: []
         }); 
 
-        for(var category of this.state.categories) {
+        var categories = this.state.categories;
+        for(var category of categories) {
             await this.getData(category);
         }
 
