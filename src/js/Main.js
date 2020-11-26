@@ -43,8 +43,15 @@ export default class Main extends React.Component {
         }); 
 
         var categories = this.state.categories;
-        for(var category of categories) {
-            await this.getData(category);
+        var dataRecieved = 0;
+
+        // To make sure all 3 data arrays got, I use the loop
+        while(dataRecieved < 3) {
+            for(var category of categories) {
+                if(this.state[category].lenght === 0) {
+                    await this.getData(category);
+                } else dataRecieved++;
+            }
         }
 
         this.setState({loaded: true});
@@ -52,7 +59,10 @@ export default class Main extends React.Component {
 
     getData = (category) => {
         return fetch('/items?category=' + category)
-        .then(responce => responce.json())
+        .then(responce => {
+            if(response.ok) return responce.json();
+            throw new Error(response.status);
+        })
         .then(data => {
             this.setState({[category]: data})
         })
