@@ -50,7 +50,7 @@ export default class Main extends React.Component {
     }
 
     getData = (category) => {
-        return fetch('http://localhost:8080/items?category=' + category)
+        return fetch('/items?category=' + category)
         .then(responce => responce.json())
         .then(data => {
             this.setState({[category]: data})
