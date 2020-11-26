@@ -60,8 +60,8 @@ export default class Main extends React.Component {
     getData = (category) => {
         return fetch('/items?category=' + category)
         .then(responce => {
-            if(response.ok) return responce.json();
-            throw new Error(response.status);
+            if(responce.ok) return responce.json();
+            throw new Error(responce.status);
         })
         .then(data => {
             this.setState({[category]: data})
