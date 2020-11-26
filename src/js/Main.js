@@ -35,20 +35,20 @@ export default class Main extends React.Component {
 
     async loadData() {
         // Unables refreshing of data and clear all current data
-        this.setState({
+        await this.setState({
             loaded: false,
             jackets: [],
             shirts: [],
             accessories: []
         }); 
 
-        var categories = this.state.categories;
+        var currentCategories = this.state.categories;
         var dataRecieved = 0;
 
         // To make sure all 3 data arrays got, I use the loop
         while(dataRecieved < 3) {
-            for(var category of categories) {
-                if(this.state[category].lenght === 0) {
+            for(var category of currentCategories) {
+                if(this.state[category].length === 0) {
                     await this.getData(category);
                 } else dataRecieved++;
             }

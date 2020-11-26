@@ -13,25 +13,33 @@ async function getApi(req, res) {
 
     var itemsByManufacturers = await getAllItemsFromManufacturers(manufacturers);
 
-    // Map each item in category with it availability status
-    var responce = itemsInCategory.map(item => {
-        let itemManufacturer = itemsByManufacturers[item.manufacturer];
-        
-        let datapayload = itemManufacturer.find(
-            val => val.id === item.id.toUpperCase()
-        )["DATAPAYLOAD"];
-        datapayload = datapayload.replace(/\n/g,'').replace(/\s+/g, '');
-        datapayload = datapayload.replace('<AVAILABILITY><INSTOCKVALUE>', '').replace('</INSTOCKVALUE></AVAILABILITY>', '');
 
-        return {
-            id: item.id,
-            name: item.name,
-            color: item.color,
-            manufacturer: item.manufacturer,
-            price: item.price,
-            availability: datapayload
-        }
-    });
+    try{
+        // Map each item in category with it availability status
+        var responce = itemsInCategory.map(item => {
+            let itemManufacturer = itemsByManufacturers[item.manufacturer];
+            
+            let datapayload = itemManufacturer.find(
+                val => val.id === item.id.toUpperCase()
+            )["DATAPAYLOAD"];
+            datapayload = datapayload.replace(/\n/g,'').replace(/\s+/g, '');
+            datapayload = datapayload.replace('<AVAILABILITY><INSTOCKVALUE>', '').replace('</INSTOCKVALUE></AVAILABILITY>', '');
+
+            return {
+                id: item.id,
+                name: item.name,
+                color: item.color,
+                manufacturer: item.manufacturer,
+                price: item.price,
+                availability: datapayload
+            }
+        });
+    } catch(e) {
+        console.log(e);
+        res.status(400).send('Something is broken!');
+        return;
+    }
+    
 
     res.send(JSON.stringify(responce));
 }
