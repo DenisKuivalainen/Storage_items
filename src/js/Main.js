@@ -24,62 +24,47 @@ export default class Main extends React.Component {
             shirts: [],
             accessories: [],
             
-            loaded: false,
+            loaded: 0,
 
             categories: ["jackets", "shirts", "accessories"]
         }
         
         this.loadData = this.loadData.bind(this);
-        this.reorderCategories = this.reorderCategories.bind(this);
     }
 
     async loadData() {
         // Unables refreshing of data and clear all current data
         await this.setState({
-            loaded: false,
+            loaded: 0,
             jackets: [],
             shirts: [],
-            accessories: []
+            accessories: [],
         }); 
 
-        var currentCategories = this.state.categories;
-        var dataRecieved = 0;
-
-        // To make sure all 3 data arrays got, I use the loop
-        while(dataRecieved < 3) {
-            for(var category of currentCategories) {
-                if(this.state[category].length === 0) {
-                    await this.getData(category);
-                } else dataRecieved++;
-            }
+        for(var category of this.state.categories) {
+            this.getData(category);
         }
-
-        this.setState({loaded: true});
     }
 
-    getData = (category) => {
-        return fetch('/items?category=' + category)
-        .then(responce => {
-            if(responce.ok) return responce.json();
-            throw new Error(responce.status);
-        })
-        .then(data => {
-            this.setState({[category]: data})
-        })
-        .catch(e => console.log(e));
-    }
+    async getData(category) {
+        var notFetched = true;
 
-    // Concider if user will decide to reload data, this will make first to load category he is in now
-    reorderCategories = (category) => {
-        let arr = this.state.categories;
-        let position = arr.indexOf(category);
-
-        if(position < 0) return;
-
-        arr.splice(position, 1);
-        arr.splice(0, 0, category);
-
-        this.setState({categories: arr});
+        // Loop used to 100% data recieve, even if errors
+        while(notFetched) {
+            await fetch('/items?category=' + category)
+            .then(responce => {
+                if(responce.ok) return responce.json();
+                throw new Error(responce.status);
+            })
+            .then(data => {
+                this.setState({
+                    [category]: data,
+                    loaded: this.state.loaded + 1
+                })
+                notFetched = false;
+            })
+            .catch(e => console.log(e));
+        }
     }
 
     render() {
@@ -89,9 +74,8 @@ export default class Main extends React.Component {
                     <div className="wrapper">
                         <Nav 
                             loadData={this.loadData}
-                            reorderCategories={this.reorderCategories} 
                             values={["jackets", "shirts", "accessories"]}
-                            loaded={this.state.loaded}
+                            loaded={this.state.loaded >= 3}
                         />
 
                         {this.renderSwitch()}
@@ -116,5 +100,9 @@ export default class Main extends React.Component {
                 </Route>
             </Switch>
         )
+    }
+
+    componentDidMount() {
+        this.loadData();
     }
 }

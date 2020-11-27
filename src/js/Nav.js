@@ -15,11 +15,6 @@ import {
 export default function Nav(props) {
     const location = useLocation();
 
-    useEffect(() => {
-        props.reorderCategories(location.pathname.substr(1)); // To load first the current page data
-        props.loadData(); // I found this as the best way of data loading after category order was changed
-    }, [])
-
     return(
         <Grid container spacing={1} style={{ width: "100%" }}>
             {[...Array(3).keys()].map((k) => 
@@ -51,7 +46,6 @@ const NavButtons = (props) => {
 
     var handleClick = () => {
         history.push(link);
-        props.props.reorderCategories(value);
     }
 
     return(
