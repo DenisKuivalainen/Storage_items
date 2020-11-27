@@ -11,7 +11,6 @@ async function getAllItemsFromManufacturers(manufacturers) {
     };
 
     return manufacturersAndItems;
-    
 }
 
 module.exports = { getAllItemsFromManufacturers };

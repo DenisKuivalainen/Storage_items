@@ -36,7 +36,7 @@ async function getApi(req, res) {
         });
     } catch(e) {
         console.log(e);
-        res.status(400).send('Something is broken!');
+        res.status(500).send('Something is broken!');
         return;
     }
     

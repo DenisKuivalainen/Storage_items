@@ -1,70 +1,132 @@
-# Getting Started with Create React App
+# Storage items - interview task
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project was done as an interview task.
+>Your client is a clothing brand that is looking for a simple web app to use in their warehouses. To do their work efficiently, the warehouse workers need a fast and simple listing page per product category, where they can check simple product and availability information from a single UI.
 
-## Available Scripts
+## Links
 
-In the project directory, you can run:
+* [WEB App](https://reactorjuniortask.herokuapp.com/) hosted on Heroku;
 
-### `yarn start`
+## Technologies
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+* React
+* Node
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Application logic
+The point was to display data of items in storage, which were achieved from some legacy API. 
+As the data, which was possible to obtain from API, is some kind of collapsed, there were need to combine it into a single json format.
 
-### `yarn test`
+#### Back end
+##### Overview
+The documentation from the task: 
+>GET /products/:category – Return a listing of products in a given category.
+GET /availability/:manufacturer – Return a list of availability info.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Data recieved from the API requests (products and availability respectively):
+![Legacy API data](https://i.ibb.co/2ZVLpRT/image.png)
 
-### `yarn build`
+As there were need to display all available data, the final format should look like:
+![Reorganizing data](https://i.ibb.co/RQPRbB5/image.png)
+##### Realization
+As result, the backend operates by follow scenario:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+**_STEP 1._** Get products data about required category.
+**_STEP 2._** Select unique manufacturers from recieved data.
+```javascript
+var manufacturers = [...new Set(itemsInCategory.map(item => item.manufacturer))];
+```
+**_STEP 3._** From array just got, get an object of type {"manufacturer1": [item1, item2, ...], ...}.
+```javascript
+async function getAllItemsFromManufacturers(manufacturers) { // The fuction gets the array of manufacturers
+    var manufacturersAndItems = {};
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    for(var manufacturer of manufacturers) { // Creates object with manufacturers' items
+        let manufacturerItems = await getAvailabilityFromShop(manufacturer); // Gets data about manufacturer's items
+        manufacturersAndItems = Object.assign(manufacturersAndItems, {
+            [manufacturer]: manufacturerItems
+        })
+    };
+    return manufacturersAndItems; // Object {"manufacturer1": [item1, item2, ...], ...}
+}
+```
+**_STEP 4._** Get new array, which will be sent to client.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+So, for every item in products data:
+_STEP 4.1._ Find data about the manufacturer, comparing id.
+```javascript
+let datapayload = itemManufacturer.find(
+    val => val.id === item.id.toUpperCase() // IDs are stored in different format
+)["DATAPAYLOAD"];
+```
+_STEP 4.2._ Create and return to be placed in array the object with all information about the item.
+```javascript
+return {
+    id: item.id,
+    name: item.name,
+    color: item.color,
+    manufacturer: item.manufacturer,
+    price: item.price,
+    availability: datapayload
+}
+```
 
-### `yarn eject`
+**_STEP 5._** In case step 4 can return an error, it was wrapped into _try... catch_ block. So in case of error the message, the server will send 500 HTTP error to client.
+```javascript
+try{
+    ...
+} catch(e) {
+    console.log(e);
+    res.status(500).send('Something is broken!');
+    return;
+}
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Front end
+The two main points of WEB app: clear display of data and handling server errors. 
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+##### UI
+The UI is not complex, done with Material UI.
+The app has 4 pages: 3 products categories and one with few information about the app (it appears if the route path mismatch). 
+![Product category page](https://i.ibb.co/0Fw3160/image.png)
+![Info page](https://i.ibb.co/XyrrfQ8/image.png)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+##### Fetching not fetched data
+The data can be loaded after DOM is rendered or by clicking reload button.
+```javascript
+async loadData() {
+    // Unables refreshing of data and clear all current data
+    await this.setState({ // Await is used as setState is asynch
+        loaded: 0, // Disables reload button
+        jackets: [],
+        shirts: [],
+        accessories: [],
+    }); 
+    for(var category of this.state.categories) { // Load data for each category
+        this.getData(category);
+    }
+}
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+The fetch function is enclosed in a loop, which will be executed while server will send ok responce.
+```javascript
+async getData(category) {
+    var notFetched = true;
+    while(notFetched) { // Loop used to 100% data recieve, even if errors
+        await fetch('/items?category=' + category)
+        ...
+        .then(data => {
+            this.setState({
+                [category]: data,
+                loaded: this.state.loaded + 1 // Button will be enabled ONLY if this variable is greater than 3, e.g. all 3 categories are loaded
+            })
+            notFetched = false; //Escape the loop
+        })
+        .catch(e => console.log(e));
+    }
+}
+```
 
-## Learn More
+## License
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+MIT
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
