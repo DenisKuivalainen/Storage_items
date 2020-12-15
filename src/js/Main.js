@@ -64,6 +64,15 @@ export default class Main extends React.Component {
                 notFetched = false;
             })
             .catch(e => console.log(e));
+
+            // var responce = await fetch('/items?category=' + category);
+            // if(responce.ok) var data = responce.json;
+            // else throw new Error(responce.status);
+            // this.setState({
+            //     [category]: data,
+            //     loaded: this.state.loaded + 1
+            // })
+            // notFetched = false;
         }
     }
 
@@ -74,7 +83,7 @@ export default class Main extends React.Component {
                     <div className="wrapper">
                         <Nav 
                             loadData={this.loadData}
-                            values={["jackets", "shirts", "accessories"]}
+                            values={this.state.categories}
                             loaded={this.state.loaded >= 3}
                         />
 
